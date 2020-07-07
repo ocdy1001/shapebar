@@ -1,11 +1,7 @@
 #!/bin/bash
 
-clock() {
-    date +%H:%M:%S
-}
-
 while :; do
-    BAR_INPUT="TIME : $(clock)"
+    BAR_INPUT="%{l}%{B#80000000} $(./modules/updates-mod) %{B-}%{c}%{B#80000000} $(./modules/wifi-mod) - $(./modules/disk-mod) - $(./modules/mem-mod) %{B-}%{r}%{B#80000000} $(./modules/dt-mod) %{B-}"
     echo $BAR_INPUT
     sleep 1
 done

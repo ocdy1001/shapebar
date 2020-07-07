@@ -1,0 +1,1 @@
+./ex-conf | ./shapebar -B "#00000000" -F "#ffffffff" -p -g "x26++" -f "Literation Mono Powerline:style=Bold:size=11"
