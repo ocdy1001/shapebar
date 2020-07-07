@@ -1,0 +1,11 @@
+#!/bin/bash
+
+clock() {
+    date +%H:%M:%S
+}
+
+while :; do
+    BAR_INPUT="TIME : $(clock)"
+    echo $BAR_INPUT
+    sleep 1
+done
