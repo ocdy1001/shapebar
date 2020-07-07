@@ -1,6 +1,6 @@
 =head1 NAME
 
-lemonbar - Featherweight lemon-scented bar
+Shapebar - Simple bar based on Lemonbar.
 
 =for HTML <a href="https://travis-ci.org/LemonBoy/bar"><img src="https://travis-ci.org/LemonBoy/bar.svg?branch=master"></a>
 
