@@ -22,8 +22,6 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib-xcb.h>
 
-// Here bet  dragons
-
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define indexof(c,s) (strchr((s),(c))-(s))
@@ -48,16 +46,6 @@ typedef struct monitor_t {
     struct monitor_t *prev, *next;
 } monitor_t;
 
-typedef struct area_t {
-    unsigned int begin:16;
-    unsigned int end:16;
-    bool active:1;
-    int align:3;
-    unsigned int button:3;
-    xcb_window_t window;
-    char *cmd;
-} area_t;
-
 typedef union rgba_t {
     struct {
         uint8_t b;
@@ -68,17 +56,13 @@ typedef union rgba_t {
     uint32_t v;
 } rgba_t;
 
-typedef struct area_stack_t {
-    int at, max;
-    area_t *area;
-} area_stack_t;
-
 enum {
     ATTR_OVERL = (1<<0),
     ATTR_UNDERL = (1<<1),
 };
 
-enum { ALIGN_L = 0,
+enum {
+    ALIGN_L = 0,
     ALIGN_C,
     ALIGN_R
 };
@@ -103,7 +87,6 @@ static xcb_visualid_t visual;
 static Visual *visual_ptr;
 static xcb_colormap_t colormap;
 
-
 static monitor_t *monhead, *montail;
 static font_t *font_list[MAX_FONT_COUNT];
 static int font_count = 0;
@@ -119,7 +102,6 @@ static int bw = -1, bh = -1, bx = 0, by = 0;
 static int bu = 1; // Underline height
 static rgba_t fgc, bgc, ugc;
 static rgba_t dfgc, dbgc, dugc;
-static area_stack_t area_stack;
 
 static XftColor sel_fg;
 static XftDraw *xft_draw;
@@ -129,7 +111,7 @@ static XftDraw *xft_draw;
 static wchar_t xft_char[MAX_WIDTHS];
 static char    xft_width[MAX_WIDTHS];
 
-    void
+void
 update_gc (void)
 {
     xcb_change_gc(c, gc[GC_DRAW], XCB_GC_FOREGROUND, (const uint32_t []){ fgc.v });
@@ -144,7 +126,7 @@ update_gc (void)
     }
 }
 
-    void
+void
 fill_gradient (xcb_drawable_t d, int x, int y, int width, int height, rgba_t start, rgba_t stop)
 {
     float i;
@@ -172,7 +154,7 @@ fill_gradient (xcb_drawable_t d, int x, int y, int width, int height, rgba_t sta
     xcb_change_gc(c, gc[GC_DRAW], XCB_GC_FOREGROUND, (const uint32_t []){ fgc.v });
 }
 
-    void
+void
 fill_rect (xcb_drawable_t d, xcb_gcontext_t _gc, int x, int y, int width, int height)
 {
     xcb_poly_fill_rectangle(c, d, _gc, 1, (const xcb_rectangle_t []){ { x, y, width, height } });
@@ -223,8 +205,7 @@ xcb_void_cookie_t xcb_poly_text_16_simple(xcb_connection_t * c,
     return xcb_ret;
 }
 
-
-    int
+int
 xft_char_width_slot (uint16_t ch)
 {
     int slot = ch % MAX_WIDTHS;
@@ -253,7 +234,7 @@ int xft_char_width (uint16_t ch, font_t *cur_font)
         return 0;
 }
 
-    int
+int
 shift (monitor_t *mon, int x, int align, int ch_width)
 {
     switch (align) {
@@ -278,7 +259,7 @@ shift (monitor_t *mon, int x, int align, int ch_width)
     return x;
 }
 
-    void
+void
 draw_lines (monitor_t *mon, int x, int w)
 {
     /* We can render both at the same time */
@@ -288,14 +269,14 @@ draw_lines (monitor_t *mon, int x, int w)
         fill_rect(mon->pixmap, gc[GC_ATTR], x, bh - bu, w, bu);
 }
 
-    void
+void
 draw_shift (monitor_t *mon, int x, int align, int w)
 {
     x = shift(mon, x, align, w);
     draw_lines(mon, x, w);
 }
 
-    int
+int
 draw_char (monitor_t *mon, font_t *cur_font, int x, int align, uint16_t ch)
 {
     int ch_width;
@@ -328,7 +309,7 @@ draw_char (monitor_t *mon, font_t *cur_font, int x, int align, uint16_t ch)
     return ch_width;
 }
 
-    rgba_t
+rgba_t
 parse_color (const char *str, char **end, const rgba_t def)
 {
     int string_len;
@@ -401,7 +382,7 @@ parse_color (const char *str, char **end, const rgba_t def)
     return (rgba_t)0U;
 }
 
-    void
+void
 set_attribute (const char modifier, const char attribute)
 {
     int pos = indexof(attribute, "ou");
@@ -424,121 +405,7 @@ set_attribute (const char modifier, const char attribute)
     }
 }
 
-
-    area_t *
-area_get (xcb_window_t win, const int btn, const int x)
-{
-    // Looping backwards ensures that we get the innermost area first
-    for (int i = area_stack.at - 1; i >= 0; i--) {
-        area_t *a = &area_stack.area[i];
-        if (a->window == win && a->button == btn && x >= a->begin && x < a->end)
-            return a;
-    }
-    return NULL;
-}
-
-    void
-area_shift (xcb_window_t win, const int align, int delta)
-{
-    if (align == ALIGN_L)
-        return;
-    if (align == ALIGN_C)
-        delta /= 2;
-
-    for (int i = 0; i < area_stack.at; i++) {
-        area_t *a = &area_stack.area[i];
-        if (a->window == win && a->align == align && !a->active) {
-            a->begin -= delta;
-            a->end -= delta;
-        }
-    }
-}
-
-    bool
-area_add (char *str, const char *optend, char **end, monitor_t *mon, const int x, const int align, const int button)
-{
-    int i;
-    char *trail;
-    area_t *a;
-
-    // A wild close area tag appeared!
-    if (*str != ':') {
-        *end = str;
-
-        // Find most recent unclosed area.
-        for (i = area_stack.at - 1; i >= 0 && !area_stack.area[i].active; i--)
-            ;
-        a = &area_stack.area[i];
-
-        // Basic safety checks
-        if (!a->cmd || a->align != align || a->window != mon->window) {
-            fprintf(stderr, "Invalid geometry for the clickable area\n");
-            return false;
-        }
-
-        const int size = x - a->begin;
-
-        switch (align) {
-            case ALIGN_L:
-                a->end = x;
-                break;
-            case ALIGN_C:
-                a->begin = mon->width / 2 - size / 2 + a->begin / 2;
-                a->end = a->begin + size;
-                break;
-            case ALIGN_R:
-                // The newest is the rightmost one
-                a->begin = mon->width - size;
-                a->end = mon->width;
-                break;
-        }
-
-        a->active = false;
-        return true;
-    }
-
-    if (area_stack.at + 1 > area_stack.max) {
-        fprintf(stderr, "Cannot add any more clickable areas (used %d/%d)\n",
-                area_stack.at, area_stack.max);
-        return false;
-    }
-    a = &area_stack.area[area_stack.at++];
-
-    // Found the closing : and check if it's just an escaped one
-    for (trail = strchr(++str, ':'); trail && trail[-1] == '\\'; trail = strchr(trail + 1, ':'))
-        ;
-
-    // Find the trailing : and make sure it's within the formatting block, also reject empty commands
-    if (!trail || str == trail || trail > optend) {
-        *end = str;
-        return false;
-    }
-
-    *trail = '\0';
-
-    // Sanitize the user command by unescaping all the :
-    for (char *needle = str; *needle; needle++) {
-        int delta = trail - &needle[1];
-        if (needle[0] == '\\' && needle[1] == ':') {
-            memmove(&needle[0], &needle[1], delta);
-            needle[delta] = 0;
-        }
-    }
-
-    // This is a pointer to the string buffer allocated in the main
-    a->cmd = str;
-    a->active = true;
-    a->align = align;
-    a->begin = x;
-    a->window = mon->window;
-    a->button = button;
-
-    *end = trail + 1;
-
-    return true;
-}
-
-    bool
+bool
 font_has_glyph (font_t *font, const uint16_t c)
 {
     if (font->xft_ft) {
@@ -559,7 +426,7 @@ font_has_glyph (font_t *font, const uint16_t c)
     return true;
 }
 
-    font_t *
+font_t *
 select_drawable_font (const uint16_t c)
 {
     // If the user has specified a font to use, try that first.
@@ -579,22 +446,18 @@ select_drawable_font (const uint16_t c)
     return NULL;
 }
 
-
-    void
+void
 parse (char *text)
 {
     font_t *cur_font;
     monitor_t *cur_mon;
-    int pos_x, align, button;
+    int pos_x, align; // , button;
     char *p = text, *block_end, *ep;
     rgba_t tmp;
 
     pos_x = 0;
     align = ALIGN_L;
     cur_mon = monhead;
-
-    // Reset the stack position
-    area_stack.at = 0;
 
     for (monitor_t *m = monhead; m != NULL; m = m->next)
         fill_rect(m->pixmap, gc[GC_CLEAR], 0, 0, m->width, bh);
@@ -621,152 +484,141 @@ parse (char *text)
                     case '!': set_attribute('!', *p++); break;
 
                     case 'R':
-                              tmp = fgc;
-                              fgc = bgc;
-                              bgc = tmp;
-                              update_gc();
-                              break;
+                            tmp = fgc;
+                            fgc = bgc;
+                            bgc = tmp;
+                            update_gc();
+                            break;
 
                     case 'l': pos_x = 0; align = ALIGN_L; break;
                     case 'c': pos_x = 0; align = ALIGN_C; break;
                     case 'r': pos_x = 0; align = ALIGN_R; break;
-
-                    case 'A':
-                              button = XCB_BUTTON_INDEX_1;
-                              // The range is 1-5
-                              if (isdigit(*p) && (*p > '0' && *p < '6'))
-                                  button = *p++ - '0';
-                              if (!area_add(p, block_end, &p, cur_mon, pos_x, align, button))
-                                  return;
-                              break;
 
                     case 'B': bgc = parse_color(p, &p, dbgc); update_gc(); break;
                     case 'F': fgc = parse_color(p, &p, dfgc); update_gc(); break;
                     case 'U': ugc = parse_color(p, &p, dugc); update_gc(); break;
 
                     case 'S':
-                              if (*p == '+' && cur_mon->next)
-                              { cur_mon = cur_mon->next; }
-                              else if (*p == '-' && cur_mon->prev)
-                              { cur_mon = cur_mon->prev; }
-                              else if (*p == 'f')
-                              { cur_mon = monhead; }
-                              else if (*p == 'l')
-                              { cur_mon = montail ? montail : monhead; }
-                              else if (isdigit(*p))
-                              { cur_mon = monhead;
-                                  for (int i = 0; i != *p-'0' && cur_mon->next; i++)
-                                      cur_mon = cur_mon->next;
-                              }
-                              else
-                              { p++; continue; }
-                              XftDrawDestroy (xft_draw);
-                              if (!(xft_draw = XftDrawCreate (dpy, cur_mon->pixmap, visual_ptr , colormap ))) {
-                                  fprintf(stderr, "Couldn't create xft drawable\n");
-                              }
+                            if (*p == '+' && cur_mon->next)
+                            { cur_mon = cur_mon->next; }
+                            else if (*p == '-' && cur_mon->prev)
+                            { cur_mon = cur_mon->prev; }
+                            else if (*p == 'f')
+                            { cur_mon = monhead; }
+                            else if (*p == 'l')
+                            { cur_mon = montail ? montail : monhead; }
+                            else if (isdigit(*p))
+                            { cur_mon = monhead;
+                                for (int i = 0; i != *p-'0' && cur_mon->next; i++)
+                                    cur_mon = cur_mon->next;
+                            }
+                            else
+                            { p++; continue; }
+                            XftDrawDestroy (xft_draw);
+                            if (!(xft_draw = XftDrawCreate (dpy, cur_mon->pixmap, visual_ptr , colormap ))) {
+                                fprintf(stderr, "Couldn't create xft drawable\n");
+                            }
 
-                              p++;
-                              pos_x = 0;
-                              break;
+                            p++;
+                            pos_x = 0;
+                            break;
                     case 'O':
-                              errno = 0;
-                              w = (int) strtoul(p, &p, 10);
-                              if (errno)
-                                  continue;
+                            errno = 0;
+                            w = (int) strtoul(p, &p, 10);
+                            if (errno)
+                                continue;
 
-                              draw_shift(cur_mon, pos_x, align, w);
+                            draw_shift(cur_mon, pos_x, align, w);
 
-                              pos_x += w;
-                              area_shift(cur_mon->window, align, w);
-                              break;
+                            pos_x += w;
+                            break;
 
                     case 'T':
-                              if (*p == '-') { //Reset to automatic font selection
-                                  font_index = -1;
-                                  p++;
-                                  break;
-                              } else if (isdigit(*p)) {
-                                  font_index = (int)strtoul(p, &ep, 10);
-                                  // User-specified 'font_index' ∊ (0,font_count]
-                                  // Otherwise just fallback to the automatic font selection
-                                  if (!font_index || font_index > font_count)
-                                      font_index = -1;
-                                  p = ep;
-                                  break;
-                              } else {
-                                  fprintf(stderr, "Invalid font slot \"%c\"\n", *p++); //Swallow the token
-                                  break;
-                              }
+                            if (*p == '-') { //Reset to automatic font selection
+                                font_index = -1;
+                                p++;
+                                break;
+                            } else if (isdigit(*p)) {
+                                font_index = (int)strtoul(p, &ep, 10);
+                                // User-specified 'font_index' ∊ (0,font_count]
+                                // Otherwise just fallback to the automatic font selection
+                                if (!font_index || font_index > font_count)
+                                    font_index = -1;
+                                p = ep;
+                                break;
+                            } else {
+                                fprintf(stderr, "Invalid font slot \"%c\"\n", *p++); //Swallow the token
+                                break;
+                            }
 
-                              // In case of error keep parsing after the closing }
+                            // In case of error keep parsing after the closing }
                 default:
-                              p = block_end;
+                            p = block_end;
             }
         }
         // Eat the trailing }
         p++;
-} else { // utf-8 -> ucs-2
-    // Escaped % symbol, eat the first one
-    if (p[0] == '%' && p[1] == '%')
-        p++;
+        } else { // utf-8 -> ucs-2
+            // Escaped % symbol, eat the first one
+            if (p[0] == '%' && p[1] == '%')
+                p++;
 
-    uint8_t *utf = (uint8_t *)p;
-    uint16_t ucs;
+            uint8_t *utf = (uint8_t *)p;
+            uint16_t ucs;
 
-    // ASCII
-    if (utf[0] < 0x80) {
-        ucs = utf[0];
-        p  += 1;
-    }
-    // Two byte utf8 sequence
-    else if ((utf[0] & 0xe0) == 0xc0) {
-        ucs = (utf[0] & 0x1f) << 6 | (utf[1] & 0x3f);
-        p += 2;
-    }
-    // Three byte utf8 sequence
-    else if ((utf[0] & 0xf0) == 0xe0) {
-        ucs = (utf[0] & 0xf) << 12 | (utf[1] & 0x3f) << 6 | (utf[2] & 0x3f);
-        p += 3;
-    }
-    // Four byte utf8 sequence
-    else if ((utf[0] & 0xf8) == 0xf0) {
-        ucs = 0xfffd;
-        p += 4;
-    }
-    // Five byte utf8 sequence
-    else if ((utf[0] & 0xfc) == 0xf8) {
-        ucs = 0xfffd;
-        p += 5;
-    }
-    // Six byte utf8 sequence
-    else if ((utf[0] & 0xfe) == 0xfc) {
-        ucs = 0xfffd;
-        p += 6;
-    }
-    // Not a valid utf-8 sequence
-    else {
-        ucs = utf[0];
-        p += 1;
-    }
+            // ASCII
+            if (utf[0] < 0x80) {
+                ucs = utf[0];
+                p  += 1;
+            }
+            // Two byte utf8 sequence
+            else if ((utf[0] & 0xe0) == 0xc0) {
+                ucs = (utf[0] & 0x1f) << 6 | (utf[1] & 0x3f);
+                p += 2;
+            }
+            // Three byte utf8 sequence
+            else if ((utf[0] & 0xf0) == 0xe0) {
+                ucs = (utf[0] & 0xf) << 12 | (utf[1] & 0x3f) << 6 | (utf[2] & 0x3f);
+                p += 3;
+            }
+            // Four byte utf8 sequence
+            else if ((utf[0] & 0xf8) == 0xf0) {
+                ucs = 0xfffd;
+                p += 4;
+            }
+            // Five byte utf8 sequence
+            else if ((utf[0] & 0xfc) == 0xf8) {
+                ucs = 0xfffd;
+                p += 5;
+            }
+            // Six byte utf8 sequence
+            else if ((utf[0] & 0xfe) == 0xfc) {
+                ucs = 0xfffd;
+                p += 6;
+            }
+            // Not a valid utf-8 sequence
+            else {
+                ucs = utf[0];
+                p += 1;
+            }
 
-    cur_font = select_drawable_font(ucs);
-    if (!cur_font)
-        continue;
+            cur_font = select_drawable_font(ucs);
+            if (!cur_font)
+                continue;
 
-    if(cur_font->ptr)
-        xcb_change_gc(c, gc[GC_DRAW] , XCB_GC_FONT, (const uint32_t []) {
-                cur_font->ptr
-                });
-    int w = draw_char(cur_mon, cur_font, pos_x, align, ucs);
+            if(cur_font->ptr)
+                xcb_change_gc(c, gc[GC_DRAW] , XCB_GC_FONT, (const uint32_t []) {
+                        cur_font->ptr
+                        });
+            int w = draw_char(cur_mon, cur_font, pos_x, align, ucs);
 
-    pos_x += w;
-    area_shift(cur_mon->window, align, w);
+            pos_x += w;
+        }
+    }
+    XftDrawDestroy (xft_draw);
 }
-}
-XftDrawDestroy (xft_draw);
-}
 
-    void
+void
 font_load (const char *pattern)
 {
     if (font_count >= MAX_FONT_COUNT) {
@@ -834,7 +686,6 @@ void add_y_offset(int offset) {
     ++offset_y_count;
 }
 
-
 enum {
     NET_WM_WINDOW_TYPE,
     NET_WM_WINDOW_TYPE_DOCK,
@@ -846,7 +697,7 @@ enum {
     NET_WM_STATE_ABOVE,
 };
 
-    void
+void
 set_ewmh_atoms (void)
 {
     const char *atom_names[] = {
@@ -903,7 +754,7 @@ set_ewmh_atoms (void)
     }
 }
 
-    monitor_t *
+monitor_t *
 monitor_new (int x, int y, int width, int height)
 {
     monitor_t *ret;
@@ -921,12 +772,12 @@ monitor_new (int x, int y, int width, int height)
     ret->window = xcb_generate_id(c);
     int depth = (visual == scr->root_visual) ? XCB_COPY_FROM_PARENT : 32;
     xcb_create_window(c, depth, ret->window, scr->root,
-            ret->x, ret->y, width, bh, 0,
-            XCB_WINDOW_CLASS_INPUT_OUTPUT, visual,
-            XCB_CW_BACK_PIXEL | XCB_CW_BORDER_PIXEL | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK | XCB_CW_COLORMAP,
-            (const uint32_t []) {
-            bgc.v, bgc.v, dock, XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_BUTTON_PRESS, colormap
-            });
+        ret->x, ret->y, width, bh, 0,
+        XCB_WINDOW_CLASS_INPUT_OUTPUT, visual,
+        XCB_CW_BACK_PIXEL | XCB_CW_BORDER_PIXEL | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK | XCB_CW_COLORMAP,
+        (const uint32_t []) {
+        bgc.v, bgc.v, dock, XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_BUTTON_PRESS, colormap
+        });
 
     ret->pixmap = xcb_generate_id(c);
     xcb_create_pixmap(c, depth, ret->pixmap, ret->window, width, bh);
@@ -934,7 +785,7 @@ monitor_new (int x, int y, int width, int height)
     return ret;
 }
 
-    void
+void
 monitor_add (monitor_t *mon)
 {
     if (!monhead) {
@@ -950,26 +801,22 @@ monitor_add (monitor_t *mon)
     }
 }
 
-    int
+int
 rect_sort_cb (const void *p1, const void *p2)
 {
     const xcb_rectangle_t *r1 = (xcb_rectangle_t *)p1;
     const xcb_rectangle_t *r2 = (xcb_rectangle_t *)p2;
 
     if (r1->x < r2->x || r1->y + r1->height <= r2->y)
-    {
         return -1;
-    }
 
     if (r1->x > r2->x || r1->y + r1->height > r2->y)
-    {
         return 1;
-    }
 
     return 0;
 }
 
-    void
+void
 monitor_create_chain (xcb_rectangle_t *rects, const int num)
 {
     int i;
@@ -1031,7 +878,7 @@ monitor_create_chain (xcb_rectangle_t *rects, const int num)
     }
 }
 
-    void
+void
 get_randr_monitors (void)
 {
     xcb_randr_get_screen_resources_current_reply_t *rres_reply;
@@ -1048,7 +895,6 @@ get_randr_monitors (void)
 
     num = xcb_randr_get_screen_resources_current_outputs_length(rres_reply);
     outputs = xcb_randr_get_screen_resources_current_outputs(rres_reply);
-
 
     // There should be at least one output
     if (num < 1) {
@@ -1126,7 +972,7 @@ get_randr_monitors (void)
 }
 
 #ifdef WITH_XINERAMA
-    void
+void
 get_xinerama_monitors (void)
 {
     xcb_xinerama_query_screens_reply_t *xqs_reply;
@@ -1156,7 +1002,7 @@ get_xinerama_monitors (void)
 }
 #endif
 
-    xcb_visualid_t
+xcb_visualid_t
 get_visual (void)
 {
 
@@ -1177,7 +1023,7 @@ get_visual (void)
 }
 
 // Parse an X-styled geometry string, we don't support signed offsets though.
-    bool
+bool
 parse_geometry_string (char *str, int *tmp)
 {
     char *p = str;
@@ -1227,7 +1073,7 @@ parse_geometry_string (char *str, int *tmp)
     return true;
 }
 
-    void
+void
 xconn (void)
 {
     if ((dpy = XOpenDisplay(0)) == NULL) {
@@ -1255,7 +1101,7 @@ xconn (void)
     xcb_create_colormap(c, XCB_COLORMAP_ALLOC_NONE, colormap, scr->root, visual);
 }
 
-    void
+void
 init (char *wm_name, char *wm_instance)
 {
     // Try to load a default font
@@ -1381,10 +1227,9 @@ init (char *wm_name, char *wm_instance)
     xcb_flush(c);
 }
 
-    void
+void
 cleanup (void)
 {
-    free(area_stack.area);
     for (int i = 0; font_list[i]; i++) {
         if (font_list[i]->xft_ft) {
             XftFontClose (dpy, font_list[i]->xft_ft);
@@ -1416,11 +1261,11 @@ cleanup (void)
         xcb_disconnect(c);
 }
 
-    char*
+char*
 strip_path(char *path)
 {
     char *slash;
-
+    // todo: change this lemonbar string
     if (path == NULL || *path == '\0')
         return strdup("lemonbar");
 
@@ -1431,7 +1276,7 @@ strip_path(char *path)
     return strndup(path, 31);
 }
 
-    void
+void
 sighandle (int signal)
 {
     if (signal == SIGINT || signal == SIGTERM)
@@ -1439,7 +1284,7 @@ sighandle (int signal)
 }
 
 
-    int
+int
 main (int argc, char **argv)
 {
     struct pollfd pollin[2] = {
@@ -1448,11 +1293,11 @@ main (int argc, char **argv)
     };
     xcb_generic_event_t *ev;
     xcb_expose_event_t *expose_ev;
-    xcb_button_press_event_t *press_ev;
+    /* xcb_button_press_event_t *press_ev; */
     char input[4096] = {0, };
     bool permanent = false;
     int geom_v[4] = { -1, -1, 0, 0 };
-    int ch, areas;
+    int ch;
     char *wm_name;
     char *instance_name;
 
@@ -1467,8 +1312,6 @@ main (int argc, char **argv)
 
     dugc = ugc = fgc;
 
-    // A safe default
-    areas = 10;
     wm_name = NULL;
 
     instance_name = strip_path(argv[0]);
@@ -1479,14 +1322,13 @@ main (int argc, char **argv)
     while ((ch = getopt(argc, argv, "hg:bdf:a:pu:B:F:U:n:o:")) != -1) {
         switch (ch) {
             case 'h':
-                printf ("lemonbar version %s patched with XFT support\n", VERSION);
-                printf ("usage: %s [-h | -g | -b | -d | -f | -a | -p | -n | -u | -B | -F]\n"
+                printf ("Shapebar version %s\n", VERSION);
+                printf ("usage: %s [-h | -g | -b | -d | -f | -p | -n | -u | -B | -F]\n"
                         "\t-h Show this help\n"
                         "\t-g Set the bar geometry {width}x{height}+{xoffset}+{yoffset}\n"
                         "\t-b Put the bar at the bottom of the screen\n"
                         "\t-d Force docking (use this if your WM isn't EWMH compliant)\n"
                         "\t-f Set the font name to use\n"
-                        "\t-a Number of clickable areas available (default is 10)\n"
                         "\t-p Don't close after the data ends\n"
                         "\t-n Set the WM_NAME atom to the specified value for this bar\n"
                         "\t-u Set the underline/overline height in pixels\n"
@@ -1505,24 +1347,8 @@ main (int argc, char **argv)
             case 'B': dbgc = bgc = parse_color(optarg, NULL, (rgba_t)0x00000000U); break;
             case 'F': dfgc = fgc = parse_color(optarg, NULL, (rgba_t)0xffffffffU); break;
             case 'U': dugc = ugc = parse_color(optarg, NULL, fgc); break;
-            case 'a': areas = strtoul(optarg, NULL, 10); break;
         }
     }
-
-    // Initialize the stack holding the clickable areas
-    area_stack.at = 0;
-    area_stack.max = areas;
-    if (areas) {
-        area_stack.area = calloc(areas, sizeof(area_t));
-
-        if (!area_stack.area) {
-            fprintf(stderr, "Could not allocate enough memory for %d clickable areas, try lowering the number\n", areas);
-            return EXIT_FAILURE;
-        }
-    }
-    else
-        area_stack.area = NULL;
-
 
     // Copy the geometry values in place
     bw = geom_v[0];
@@ -1569,17 +1395,6 @@ main (int argc, char **argv)
                         case XCB_EXPOSE:
                             if (expose_ev->count == 0)
                                 redraw = true;
-                            break;
-                        case XCB_BUTTON_PRESS:
-                            press_ev = (xcb_button_press_event_t *)ev;
-                            {
-                                area_t *area = area_get(press_ev->event, press_ev->detail, press_ev->event_x);
-                                // Respond to the click
-                                if (area) {
-                                    (void)write(STDOUT_FILENO, area->cmd, strlen(area->cmd));
-                                    (void)write(STDOUT_FILENO, "\n", 1);
-                                }
-                            }
                             break;
                     }
 

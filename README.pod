@@ -37,10 +37,6 @@ Force docking without asking the window manager. This is needed if the window ma
 Define the font to load into one of the five slots (the number of slots is hardcoded and can be tweaked by
 changing the MAX_FONT_COUNT parameter in the source code). This version supports fontconfig font specifiers and anti-aliased fonts.
 
-=item B<-a> I<number>
-
-Set number of clickable areas (default is 10)
-
 =item B<-p>
 
 Make the bar permanent, don't exit after the standard input is closed.
@@ -113,16 +109,6 @@ Set the font used to draw the following text. The parameter I<index> can either 
 
 Set the text underline color. The parameter I<color> can be I<-> or a color in one of the formats mentioned before. The special value I<-> resets the color to the default one.
 
-=item B<A>I<button>:I<command>:
-
-Create a clickable area starting from the current position, when the area is clicked I<command> is printed on stdout. The area is closed when a B<A> token, not followed by : is encountered.
-
-Eg. I<%{A:reboot:} Click here to reboot %{A}>
-
-The I<button> field is optional, it defaults to the left button, and it's a number ranging from 1 to 5 which maps to the left, middle, right, scroll up and scroll down movements. Your mileage may vary.
-
-Nested clickable areas can trigger different commands.
-
 Eg. I<%{A:reboot:}%{A3:halt:} Left click to reboot, right click to shutdown %{A}%{A}>
 
 =item B<S>I<dir>
@@ -190,6 +176,7 @@ L<git repository|https://github.com/LemonBoy/bar>
 =head1 AUTHOR
 
 2012-2017 (C) The Lemon Man
+2020 (C) Cody Bloemhard
 
 Xinerama support was kindly contributed by Stebalien
 
