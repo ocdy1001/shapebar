@@ -10,7 +10,8 @@ I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font
 
 =head1 DESCRIPTION
 
-B<lemonbar> (formerly known as B<bar>) is a lightweight bar entirely based on XCB. Provides full UTF-8 support, basic formatting, RandR and Xinerama support and EWMH compliance without wasting your precious memory.
+B<Shapebar> is based on B<lemonboy/bar> and B<krypt-n/bar> which provides the standard Lemonbar functionity along with Xft support.
+Shapebar adds (todo: Sdir =), (todo: slots), (todo: shaped borders) and removes clickable areas.
 
 =head1 OPTIONS
 
@@ -176,6 +177,7 @@ L<git repository|https://github.com/LemonBoy/bar>
 =head1 AUTHOR
 
 2012-2017 (C) The Lemon Man
+
 2020 (C) Cody Bloemhard
 
 Xinerama support was kindly contributed by Stebalien

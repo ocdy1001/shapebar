@@ -1,0 +1,6 @@
+#!/bin/bash
+outp=$(sensors)
+nvmet=$(echo "$outp" | grep "Composite" | awk '{print $2}')
+cpuv=$(echo "$outp" | grep "Vcore" | awk '{print $2, $3}')
+cput=$(echo "$outp" | grep "Tctl" | awk '{print $2}')
+echo -e "NVMe: $nvmet CPU: $cput / $cpuv"
