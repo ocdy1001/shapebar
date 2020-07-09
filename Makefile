@@ -37,7 +37,7 @@ clean:
 	rm -f ./*.o ./*.1
 	rm -f ./${EXEC}
 
-install: lemonbar doc
+install: shapebar doc
 	install -D -m 755 shapebar ${DESTDIR}${BINDIR}/shapebar
 	install -D -m 644 shapebar.1 ${DESTDIR}${PREFIX}/share/man/man1/shapebar.1
 
