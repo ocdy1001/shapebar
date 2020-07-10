@@ -1,0 +1,3 @@
+cp run-shapebar ~/scripts/
+cp shapebar-conf ~/scripts/
+cp -r modules ~/scripts/

@@ -7,7 +7,7 @@ while :; do
     read cpu user nice system idle iowait irq softirq steal guest < /proc/stat
     cpu_active_prev=$((user+system+nice+softirq+steal))
     cpu_total_prev=$((user+system+nice+softirq+steal+idle+iowait))
-    sleep 0.5
+    sleep 1
     read cpu user nice system idle iowait irq softirq steal guest < /proc/stat
     cpu_active_cur=$((user+system+nice+softirq+steal))
     cpu_total_cur=$((user+system+nice+softirq+steal+idle+iowait))
@@ -19,7 +19,7 @@ while :; do
         diskv=$(~/scripts/modules/disk-mod)
     fi
 
-    BAR_INPUT="%{l}%{B#80000000} $val $(echo -e "$updv") $(echo -e "$cpu_util") %{B-}%{c}%{B#80000000} $(~/scripts/modules/wifi-mod) - $(~/scripts/modules/sensor-mod) - $(echo -e $diskv) - $(~/scripts/modules/mem-mod) %{B-}%{r}%{B#80000000} $(~/scripts/modules/dt-mod) %{B-}"
+    BAR_INPUT="%{l}%{B#80000000} $val $(echo -e "$updv") $(~/scripts/modules/caps-mod)%{B-}%{c}%{B#80000000} $(~/scripts/modules/wifi-mod) - $(~/scripts/modules/sensor-mod) - $(echo -e $diskv) - $(echo -e "$cpu_util")% - $(~/scripts/modules/mem-mod) %{B-}%{r}%{B#80000000} $(~/scripts/modules/dt-mod) %{B-}"
     echo $BAR_INPUT
 
     ((i++))

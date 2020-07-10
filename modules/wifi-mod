@@ -1,3 +1,3 @@
-iw dev wlp6s0 link | grep 'SSID' | awk '{ print $2 }' | tr -d '\n'
+iw dev wlan0 link | grep 'SSID' | awk '{ print $2 }' | tr -d '\n'
 echo -n ': '
-cat /proc/net/wireless | grep 'wlp' | awk '{ split(FILENAME, array, "/"); print array[5] $3 }' | tr -d '.'
+cat /proc/net/wireless | grep 'wlan' | awk '{ split(FILENAME, array, "/"); print array[5] $3 }' | tr -d '.'
