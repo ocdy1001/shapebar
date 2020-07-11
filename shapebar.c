@@ -750,7 +750,7 @@ set_ewmh_atoms (void)
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, mon->window, atom_list[NET_WM_STRUT_PARTIAL], XCB_ATOM_CARDINAL, 32, 12, strut);
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, mon->window, atom_list[NET_WM_STRUT], XCB_ATOM_CARDINAL, 32, 4, strut);
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, mon->window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, 3, "bar");
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, mon->window, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, 12, "lemonbar\0Bar");
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, mon->window, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, 12, "shapebar\0Bar");
     }
 }
 
@@ -1265,9 +1265,8 @@ char*
 strip_path(char *path)
 {
     char *slash;
-    // todo: change this lemonbar string
     if (path == NULL || *path == '\0')
-        return strdup("lemonbar");
+        return strdup("shapebar");
 
     slash = strrchr(path, '/');
     if (slash != NULL)
@@ -1386,6 +1385,7 @@ main (int argc, char **argv)
                     ; // Drain the buffer, the last line is actually used
                 parse(input);
                 redraw = true;
+                /* printf("REFRESH\n"); */
             }
             if (pollin[1].revents & POLLIN) { // The event comes from the Xorg server
                 while ((ev = xcb_poll_for_event(c))) {
