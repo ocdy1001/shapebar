@@ -1385,7 +1385,6 @@ main (int argc, char **argv)
                     ; // Drain the buffer, the last line is actually used
                 parse(input);
                 redraw = true;
-                /* printf("REFRESH\n"); */
             }
             if (pollin[1].revents & POLLIN) { // The event comes from the Xorg server
                 while ((ev = xcb_poll_for_event(c))) {

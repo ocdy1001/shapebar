@@ -12,6 +12,7 @@ while :; do
     cpu_active_cur=$((user+system+nice+softirq+steal))
     cpu_total_cur=$((user+system+nice+softirq+steal+idle+iowait))
     cpu_util=$((100*(cpu_active_cur-cpu_active_prev)/(cpu_total_cur-cpu_total_prev)))
+    cpu_util=`printf %03d $cpu_util`
     mod=$(expr $i % 120)
     if [ $mod -eq 0 ]
     then
@@ -19,7 +20,7 @@ while :; do
         diskv=$(~/scripts/modules/disk-mod)
     fi
 
-    BAR_INPUT="%{l}%{B#80000000} $val $(echo -e "$updv") $(~/scripts/modules/caps-mod)%{B-}%{c}%{B#80000000} $(~/scripts/modules/wifi-mod) - $(~/scripts/modules/sensor-mod) - $(echo -e $diskv) - $(echo -e "$cpu_util")% - $(~/scripts/modules/mem-mod) %{B-}%{r}%{B#80000000} $(~/scripts/modules/dt-mod) %{B-}"
+    BAR_INPUT="%{l}%{B#80000000} $updv $(~/scripts/modules/caps-mod)%{B-}%{c}%{B#80000000} $(~/scripts/modules/wifi-mod) - $(~/scripts/modules/sensor-mod) - $diskv - $cpu_util% - $(~/scripts/modules/mem-mod) %{B-}%{r}%{B#80000000} $(~/scripts/modules/dt-mod) %{B-}"
     echo $BAR_INPUT
 
     ((i++))
