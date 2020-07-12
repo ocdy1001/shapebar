@@ -102,6 +102,7 @@ static int bw = -1, bh = -1, bx = 0, by = 0;
 static int bu = 1; // Underline height
 static rgba_t fgc, bgc, ugc;
 static rgba_t dfgc, dbgc, dugc;
+static bool clone_mode = false;
 
 static XftColor sel_fg;
 static XftDraw *xft_draw;
@@ -499,6 +500,7 @@ parse (char *text)
                     case 'U': ugc = parse_color(p, &p, dugc); update_gc(); break;
 
                     case 'S':
+                            if(clone_mode) break; // In clone mode we only operate on monhead
                             if (*p == '+' && cur_mon->next)
                             { cur_mon = cur_mon->next; }
                             else if (*p == '-' && cur_mon->prev)
@@ -1318,15 +1320,16 @@ main (int argc, char **argv)
     // Connect to the Xserver and initialize scr
     xconn();
 
-    while ((ch = getopt(argc, argv, "hg:bdf:a:pu:B:F:U:n:o:")) != -1) {
+    while ((ch = getopt(argc, argv, "hg:bdcf:a:pu:B:F:U:n:o:")) != -1) {
         switch (ch) {
             case 'h':
                 printf ("Shapebar version %s\n", VERSION);
-                printf ("usage: %s [-h | -g | -b | -d | -f | -p | -n | -u | -B | -F]\n"
+                printf ("usage: %s [-h | -g | -b | -d | -c | -f | -p | -n | -u | -B | -F]\n"
                         "\t-h Show this help\n"
                         "\t-g Set the bar geometry {width}x{height}+{xoffset}+{yoffset}\n"
                         "\t-b Put the bar at the bottom of the screen\n"
                         "\t-d Force docking (use this if your WM isn't EWMH compliant)\n"
+                        "\t-c Clone monitor head pixels to all others. Only for uniform sized monitors. No error checking included. %%{S} is ignored.\n"
                         "\t-f Set the font name to use\n"
                         "\t-p Don't close after the data ends\n"
                         "\t-n Set the WM_NAME atom to the specified value for this bar\n"
@@ -1340,6 +1343,7 @@ main (int argc, char **argv)
             case 'n': wm_name = strdup(optarg); break;
             case 'b': topbar = false; break;
             case 'd': dock = true; break;
+            case 'c': clone_mode = true; break;
             case 'f': font_load(optarg); break;
             case 'u': bu = strtoul(optarg, NULL, 10); break;
             case 'o': add_y_offset(strtol(optarg, NULL, 10)); break;
@@ -1381,8 +1385,8 @@ main (int argc, char **argv)
             }
             if (pollin[0].revents & POLLIN) { // New input, process it
                 input[0] = '\0';
-                while (fgets(input, sizeof(input), stdin) != NULL)
-                    ; // Drain the buffer, the last line is actually used
+                // Drain the buffer, the last line is actually used
+                while (fgets(input, sizeof(input), stdin) != NULL);
                 parse(input);
                 redraw = true;
             }
@@ -1404,7 +1408,12 @@ main (int argc, char **argv)
 
         if (redraw) { // Copy our temporary pixmap onto the window
             for (monitor_t *mon = monhead; mon; mon = mon->next) {
-                xcb_copy_area(c, mon->pixmap, mon->window, gc[GC_DRAW], 0, 0, 0, 0, mon->width, bh);
+                // if clone mode, just use monhead's pixmap for everyone.
+                // litteral clone, if screen sizes are not uniform things might go boom
+                // this is intended
+                // otherwise user can clone input in sh and us %{S} to get is everywhere
+                monitor_t *pixowner = clone_mode ? monhead : mon;
+                xcb_copy_area(c, pixowner->pixmap, mon->window, gc[GC_DRAW], 0, 0, 0, 0, mon->width, bh);
             }
         }
 

@@ -11,7 +11,22 @@ I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font
 =head1 DESCRIPTION
 
 B<Shapebar> is based on B<lemonboy/bar> and B<krypt-n/bar> which provides the standard Lemonbar functionity along with Xft support.
-Shapebar adds (todo: Sdir =), (todo: slots), (todo: shaped borders) and removes clickable areas.
+Shapebar adds monitor cloning mode (-c), (todo: shaped borders) and removes clickable areas.
+
+Shapebar is supposed to be a simple non interactive bar that only has functionality to display info.
+I was annoyed by Polybar's many modules that need to be compiled. This explodes the scope of the program.
+You just pipe in the text from bash. I barely changed the input method from the original Lemonbar.
+When I used Polybar I wanted triangles drawn in the bar and did it very hacky by having a powerline font and using the triangle char at exactly the right size.
+TODO:
+Shapebar adds shapes to draw in the backgound. They serve as seperators. This is how Shapebar derives it's name.
+
+=over
+
+=item Monitor cloning mode is introduced to have an easy method of having the same bar everywhere for uniform sized monitors.
+
+=item Clickable areas are removed because I didn't design shapebar to be interactive.
+
+=back
 
 =head1 OPTIONS
 
@@ -32,6 +47,14 @@ Dock the bar at the bottom of the screen.
 =item B<-d>
 
 Force docking without asking the window manager. This is needed if the window manager isn't EWMH compliant.
+
+=item B<-c>
+
+Copy the the pixelmap of the headmonitor (the first one) to all others and ignores %{S} blocks. Only Suitable for uniform sized monitors.
+Light and fast.
+No error checking included.
+If you have non uniform sized monitors it is undefined behaviour.
+If this does not work in your situation, use %{S} blocks to get your string across monitors.
 
 =item B<-f> I<font>
 
@@ -172,7 +195,7 @@ Clicking on an area makes lemonbar output the command to stdout, followed by a n
 
 =head1 WWW
 
-L<git repository|https://github.com/LemonBoy/bar>
+L<git repository|https://github.com/ocdy1001/shapebar>
 
 =head1 AUTHOR
 
