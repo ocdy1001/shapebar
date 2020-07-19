@@ -21,8 +21,12 @@ while :; do
         diskv=$(~/scripts/modules/disk-mod)
     fi
 
-    BAR_INPUT="%{l}%{B#80000000} $updv $(~/scripts/modules/caps-mod)%{B-}%{c}%{B#80000000} $(~/scripts/modules/wifi-mod) - $(~/scripts/modules/sensor-mod) - $diskv -$cpu_outp% - $(~/scripts/modules/mem-mod) %{B-}%{r}%{B#80000000} $(~/scripts/modules/dt-mod) %{B-}"
-    echo $BAR_INPUT
+    outp="%{l}%{B#80000000} $updv $(~/scripts/modules/caps-mod)"
+    outp+="%{c} %{Zt<} $(~/scripts/modules/wifi-mod) "
+    outp+="$(~/scripts/modules/sensor-mod) - $diskv -$cpu_outp% - "
+    outp+="$(~/scripts/modules/mem-mod) %{Zt>}"
+    outp+="%{r} $(~/scripts/modules/dt-mod) "
+    echo "$outp"
 
     ((i++))
 done

@@ -2,8 +2,6 @@
 
 Shapebar - Simple bar based on Lemonbar.
 
-=for HTML <a href="https://travis-ci.org/LemonBoy/bar"><img src="https://travis-ci.org/LemonBoy/bar.svg?branch=master"></a>
-
 =head1 SYNOPSIS
 
 I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font> | -p | -n I<name> | -u I<pixel> | -B I<color> | -F I<color> | -U I<color> | -o I<offset> ]
@@ -132,8 +130,6 @@ Set the font used to draw the following text. The parameter I<index> can either 
 =item B<U>I<color>
 
 Set the text underline color. The parameter I<color> can be I<-> or a color in one of the formats mentioned before. The special value I<-> resets the color to the default one.
-
-Eg. I<%{A:reboot:}%{A3:halt:} Left click to reboot, right click to shutdown %{A}%{A}>
 
 =item B<S>I<dir>
 

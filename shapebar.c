@@ -161,6 +161,11 @@ fill_rect (xcb_drawable_t d, xcb_gcontext_t _gc, int x, int y, int width, int he
     xcb_poly_fill_rectangle(c, d, _gc, 1, (const xcb_rectangle_t []){ { x, y, width, height } });
 }
 
+void
+fill_triangle (xcb_drawable_t d, xcb_gcontext_t _gc, int x, int y, int w, int h)
+{
+    xcb_fill_poly(c, d, _gc, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 3, (const xcb_point_t []){ {x,y}, {x+w,y}, {x,y+h} });
+}
 // Apparently xcb cannot seem to compose the right request for this call, hence we have to do it by
 // ourselves.
 // The funcion is taken from 'wmdia' (http://wmdia.sourceforge.net/)
@@ -318,57 +323,44 @@ parse_color (const char *str, char **end, const rgba_t def)
 
     if (!str)
         return def;
-
     // Reset
     if (str[0] == '-') {
         if (end)
             *end = (char *)str + 1;
-
         return def;
     }
-
     // Hex representation
     if (str[0] != '#') {
         if (end)
             *end = (char *)str;
-
         fprintf(stderr, "Invalid color specified\n");
         return def;
     }
-
     errno = 0;
     rgba_t tmp = (rgba_t)(uint32_t)strtoul(str + 1, &ep, 16);
-
     if (end)
         *end = ep;
-
     // Some error checking is definitely good
     if (errno) {
         fprintf(stderr, "Invalid color specified\n");
         return def;
     }
-
     string_len = ep - (str + 1);
-
     switch (string_len) {
-        case 3:
-            // Expand the #rgb format into #rrggbb (aa is set to 0xff)
+        case 3: // Expand the #rgb format into #rrggbb (aa is set to 0xff)
             tmp.v = (tmp.v & 0xf00) * 0x1100
                 | (tmp.v & 0x0f0) * 0x0110
                 | (tmp.v & 0x00f) * 0x0011;
-        case 6:
-            // If the code is in #rrggbb form then assume it's opaque
+        case 6: // If the code is in #rrggbb form then assume it's opaque
             tmp.a = 255;
             break;
         case 7:
-        case 8:
-            // Colors in #aarrggbb format, those need no adjustments
+        case 8: // Colors in #aarrggbb format, those need no adjustments
             break;
         default:
             fprintf(stderr, "Invalid color specified\n");
             return def;
     }
-
     // Premultiply the alpha in
     if (tmp.a) {
         // The components are clamped automagically as the rgba_t is made of uint8_t
@@ -379,9 +371,10 @@ parse_color (const char *str, char **end, const rgba_t def)
                 .a = tmp.a,
         };
     }
-
     return (rgba_t)0U;
 }
+void
+parse_seperator(const char *str, char **end);
 
 void
 set_attribute (const char modifier, const char attribute)
@@ -483,79 +476,81 @@ parse (char *text)
                     case '+': set_attribute('+', *p++); break;
                     case '-': set_attribute('-', *p++); break;
                     case '!': set_attribute('!', *p++); break;
-
                     case 'R':
-                            tmp = fgc;
-                            fgc = bgc;
-                            bgc = tmp;
-                            update_gc();
-                            break;
-
+                        tmp = fgc;
+                        fgc = bgc;
+                        bgc = tmp;
+                        update_gc();
+                        break;
                     case 'l': pos_x = 0; align = ALIGN_L; break;
                     case 'c': pos_x = 0; align = ALIGN_C; break;
                     case 'r': pos_x = 0; align = ALIGN_R; break;
-
                     case 'B': bgc = parse_color(p, &p, dbgc); update_gc(); break;
                     case 'F': fgc = parse_color(p, &p, dfgc); update_gc(); break;
                     case 'U': ugc = parse_color(p, &p, dugc); update_gc(); break;
-
                     case 'S':
-                            if(clone_mode) break; // In clone mode we only operate on monhead
-                            if (*p == '+' && cur_mon->next)
-                            { cur_mon = cur_mon->next; }
-                            else if (*p == '-' && cur_mon->prev)
-                            { cur_mon = cur_mon->prev; }
-                            else if (*p == 'f')
-                            { cur_mon = monhead; }
-                            else if (*p == 'l')
-                            { cur_mon = montail ? montail : monhead; }
-                            else if (isdigit(*p))
-                            { cur_mon = monhead;
-                                for (int i = 0; i != *p-'0' && cur_mon->next; i++)
-                                    cur_mon = cur_mon->next;
-                            }
-                            else
-                            { p++; continue; }
-                            XftDrawDestroy (xft_draw);
-                            if (!(xft_draw = XftDrawCreate (dpy, cur_mon->pixmap, visual_ptr , colormap ))) {
-                                fprintf(stderr, "Couldn't create xft drawable\n");
-                            }
-
+                        if (clone_mode) break; // In clone mode we only operate on monhead
+                        if (*p == '+' && cur_mon->next)
+                            cur_mon = cur_mon->next;
+                        else if (*p == '-' && cur_mon->prev)
+                            cur_mon = cur_mon->prev;
+                        else if (*p == 'f')
+                            cur_mon = monhead;
+                        else if (*p == 'l')
+                            cur_mon = montail ? montail : monhead;
+                        else if (isdigit(*p)) {
+                            cur_mon = monhead;
+                            for (int i = 0; i != *p-'0' && cur_mon->next; i++)
+                                cur_mon = cur_mon->next;
+                        }else{
                             p++;
-                            pos_x = 0;
-                            break;
+                            continue;
+                        }
+                        XftDrawDestroy (xft_draw);
+                        if (!(xft_draw = XftDrawCreate (dpy, cur_mon->pixmap, visual_ptr, colormap)))
+                            fprintf(stderr, "Couldn't create xft drawable\n");
+                        p++;
+                        pos_x = 0;
+                        break;
+                    case 'Z':
+                    {
+                        char mode = *p;
+                        p++;
+                        char dir = *p;
+                        p++;
+                        int x = shift(cur_mon, pos_x, align, bh);
+                        fill_triangle(cur_mon->pixmap, gc[GC_DRAW], x, 0, bh, bh);
+                        pos_x += bh;
+                        break;
+                    }
                     case 'O':
-                            errno = 0;
-                            w = (int) strtoul(p, &p, 10);
-                            if (errno)
-                                continue;
-
-                            draw_shift(cur_mon, pos_x, align, w);
-
-                            pos_x += w;
-                            break;
-
+                        errno = 0;
+                        w = (int) strtoul(p, &p, 10);
+                        if (errno)
+                            continue;
+                        draw_shift(cur_mon, pos_x, align, w);
+                        pos_x += w;
+                        break;
                     case 'T':
-                            if (*p == '-') { //Reset to automatic font selection
+                        if (*p == '-') { //Reset to automatic font selection
+                            font_index = -1;
+                            p++;
+                            break;
+                        }else if (isdigit(*p)) {
+                            font_index = (int)strtoul(p, &ep, 10);
+                            // User-specified 'font_index' ∊ (0,font_count]
+                            // Otherwise just fallback to the automatic font selection
+                            if (!font_index || font_index > font_count)
                                 font_index = -1;
-                                p++;
-                                break;
-                            } else if (isdigit(*p)) {
-                                font_index = (int)strtoul(p, &ep, 10);
-                                // User-specified 'font_index' ∊ (0,font_count]
-                                // Otherwise just fallback to the automatic font selection
-                                if (!font_index || font_index > font_count)
-                                    font_index = -1;
-                                p = ep;
-                                break;
-                            } else {
-                                fprintf(stderr, "Invalid font slot \"%c\"\n", *p++); //Swallow the token
-                                break;
-                            }
-
-                            // In case of error keep parsing after the closing }
-                default:
-                            p = block_end;
+                            p = ep;
+                            break;
+                        }else {
+                            fprintf(stderr, "Invalid font slot \"%c\"\n", *p++); //Swallow the token
+                            break;
+                        }
+                    // In case of error keep parsing after the closing }
+                    default:
+                        p = block_end;
             }
         }
         // Eat the trailing }
