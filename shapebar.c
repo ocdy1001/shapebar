@@ -162,10 +162,29 @@ fill_rect (xcb_drawable_t d, xcb_gcontext_t _gc, int x, int y, int width, int he
 }
 
 void
-fill_triangle (xcb_drawable_t d, xcb_gcontext_t _gc, int x, int y, int w, int h)
+fill_poly (xcb_drawable_t d, xcb_gcontext_t _gc, int plen, const xcb_point_t *points)
 {
-    xcb_fill_poly(c, d, _gc, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 3, (const xcb_point_t []){ {x,y}, {x+w,y}, {x,y+h} });
+    xcb_fill_poly(c, d, _gc, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, plen, points);
 }
+
+#define POINT xcb_point_t
+
+const POINT*
+seperator_hud(int x, int y, int w, int h, char dir)
+{
+    POINT* ps = malloc(sizeof(POINT) * 3);
+    if(dir == '<'){
+        ps[0] = (POINT){x,y};
+        ps[1] = (POINT){x+w,y};
+        ps[2] = (POINT){x+w,y+h};
+    }else{
+        ps[0] = (POINT){x,y};
+        ps[1] = (POINT){x+w,y};
+        ps[2] = (POINT){x,y+h};
+    }
+    return ps;
+}
+
 // Apparently xcb cannot seem to compose the right request for this call, hence we have to do it by
 // ourselves.
 // The funcion is taken from 'wmdia' (http://wmdia.sourceforge.net/)
@@ -519,7 +538,7 @@ parse (char *text)
                         char dir = *p;
                         p++;
                         int x = shift(cur_mon, pos_x, align, bh);
-                        fill_triangle(cur_mon->pixmap, gc[GC_DRAW], x, 0, bh, bh);
+                        fill_poly(cur_mon->pixmap, gc[GC_DRAW], 3, seperator_hud(x, 0, bh, bh, dir));
                         pos_x += bh;
                         break;
                     }
