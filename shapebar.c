@@ -29,11 +29,8 @@
 typedef struct font_t {
     xcb_font_t ptr;
     xcb_charinfo_t *width_lut;
-
     XftFont *xft_ft;
-
     int ascent;
-
     int descent, height, width;
     uint16_t char_max;
     uint16_t char_min;
@@ -103,6 +100,7 @@ static int bu = 1; // Underline height
 static rgba_t fgc, bgc, ugc;
 static rgba_t dfgc, dbgc, dugc;
 static bool clone_mode = false;
+static int sep_width = 0, sep_height = 0;
 
 static XftColor sel_fg;
 static XftDraw *xft_draw;
@@ -531,15 +529,44 @@ parse (char *text)
                         p++;
                         pos_x = 0;
                         break;
-                    case 'Z':
+                    case 'Z': // Seperator
                     {
                         char mode = *p;
                         p++;
+                        if(!p){
+                            printf("Error: Seperator (Z) could not parse direction!");
+                            break;
+                        }
                         char dir = *p;
-                        p++;
-                        int x = shift(cur_mon, pos_x, align, bh);
-                        fill_poly(cur_mon->pixmap, gc[GC_DRAW], 3, seperator_hud(x, 0, bh, bh, dir));
-                        pos_x += bh;
+                        int x = shift(cur_mon, pos_x, align, sep_width);
+                        fill_poly(cur_mon->pixmap, gc[GC_DRAW], 3, seperator_hud(x, 0, sep_width, sep_height, dir));
+                        pos_x += sep_width;
+                        break;
+                    }
+                    case 'W': // Width
+                    {
+                        if(*p == '-'){
+                            sep_width = bh;
+                            break;
+                        }
+                        errno = 0;
+                        int w = (int)strtoul(p, &p, 10);
+                        if(errno)
+                            continue;
+                        sep_width = w;
+                        break;
+                    }
+                    case 'H': // Height
+                    {
+                        if(*p == '-'){
+                            sep_height = bh;
+                            break;
+                        }
+                        errno = 0;
+                        int h = (int)strtoul(p, &p, 10);
+                        if(errno)
+                            continue;
+                        sep_height = h;
                         break;
                     }
                     case 'O':
@@ -1372,6 +1399,8 @@ main (int argc, char **argv)
     bh = geom_v[1];
     bx = geom_v[2];
     by = geom_v[3];
+    sep_width = bh;
+    sep_height = bh;
 
     // Do the heavy lifting
     init(wm_name, instance_name);

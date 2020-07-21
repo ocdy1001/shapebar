@@ -21,14 +21,14 @@ while :; do
         diskv=$(~/scripts/modules/disk-mod)
     fi
 
-    outp="%{l}%{B-}%{F-}%{Zt<}%{B#80000000}%{F#fff}"
+    outp="%{W50}%{l}%{B-}%{F-}%{Zt<}%{B#80000000}%{F#fff}"
     outp+=" $updv $(~/scripts/modules/caps-mod)"
-    outp+="%{B-}%{F-}%{Zt>}%{B#0000}%{F#fff}"
-    outp+="%{c}%{B-}%{F-}%{Zt<}%{B#80000000}%{F#fff}"
+    outp+="%{B-}%{F-}%{Zt>}%{B#00000000}%{F#fff}"
+    outp+="%{c}%{B-}%{F-}%{Zt<}%{B#80000000}%{F#fff} "
     outp+="$(~/scripts/modules/wifi-mod) "
     outp+="$(~/scripts/modules/sensor-mod) - $diskv -$cpu_outp% - "
     outp+="$(~/scripts/modules/mem-mod) "
-    outp+="%{B-}%{F-}%{Zt>}%{B#0000}%{F#fff}"
+    outp+="%{B-}%{F-}%{Zt>}%{B#00000000}%{F#fff}"
     outp+="%{r}%{B-}%{F-}%{Zt<}%{B#80000000}%{F#fff}"
     outp+=" $(~/scripts/modules/dt-mod) "
     outp+="%{B-}%{F-}%{Zt>}"
