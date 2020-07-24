@@ -212,6 +212,33 @@ sep_arc(int x, int y, int w, int h, char dir, int *len)
     *len = n + 3;
     return ps;
 }
+const POINT*
+sep_sigmoid(int x, int y, int w, int h, char dir, int *len)
+{
+    int n = arc_n;
+    POINT* ps = malloc(sizeof(POINT) * (n + 3));
+    if(dir == '<'){
+        for(int i = 0; i < n; i++){
+            float z = (float)i / (float)n;
+            float t = -6.0f + z * 12.0f;
+            ps[i] = (POINT){x + (int)(z * w), y + (int)((1.0f/(1.0f + exp(-t))) * h)};
+        }
+        ps[n + 0] = (POINT){x + w, y + h};
+        ps[n + 1] = (POINT){x + w, y};
+        ps[n + 2] = (POINT){x, y};
+    }else{
+        for(int i = 0; i < n; i++){
+            float z = (float)i / (float)n;
+            float t = -6.0f + z * 12.0f;
+            ps[i] = (POINT){x + (int)(z * w), y + h - (int)((1.0f/(1.0f + exp(-t))) * h)};
+        }
+        ps[n + 0] = (POINT){x + w, y};
+        ps[n + 1] = (POINT){x, y};
+        ps[n + 2] = (POINT){x, y + h};
+    }
+    *len = n + 3;
+    return ps;
+}
 // Apparently xcb cannot seem to compose the right request for this call, hence we have to do it by
 // ourselves.
 // The funcion is taken from 'wmdia' (http://wmdia.sourceforge.net/)
@@ -571,6 +598,7 @@ parse (char *text)
                         int len = 0;
                         const POINT* ps;
                         if(mode == 'a') ps = sep_arc(x, 0, sep_width, sep_height, dir, &len);
+                        else if(mode == 's') ps = sep_sigmoid(x, 0, sep_width, sep_height, dir, &len);
                         else ps = sep_t0(x, 0, sep_width, sep_height, dir, &len);
                         fill_poly(cur_mon->pixmap, gc[GC_DRAW], len, ps);
                         pos_x += sep_width;
@@ -1411,7 +1439,7 @@ main (int argc, char **argv)
                         "\t-B Set background color in #AARRGGBB\n"
                         "\t-F Set foreground color in #AARRGGBB\n"
                         "\t-o Add a vertical offset to the text, it can be negative\n"
-                        "\t-a How many points there are in the arc part of the arc seperator, default to 25\n"
+                        "\t-a How many points there are in the curved parts of seperators, default to 25\n"
                         , argv[0]);
                 exit (EXIT_SUCCESS);
             case 'g': (void)parse_geometry_string(optarg, geom_v); break;

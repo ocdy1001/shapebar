@@ -88,7 +88,7 @@ Set the underline color of the bar. Accepts the same color formats as B<-B>.
 
 =item B<-a> I<arc points>
 
-set the number of points in the arc part of the arc seperator. Must be a non-negative integer.
+set the number of points in the curved part of the arc and sigmoid seperator. Must be a non-negative integer.
 
 =back
 
@@ -189,7 +189,7 @@ Draw a line under the text.
 =item B<Z>I<md>
 
 Draw a seperator. Use the format Z??. First char after the Z is the mode, which selects the seperator. Second char is the direction.
-Possible modes are t and a. t Draws an triangle and a draws and arc. Possible directions are < and > for left and right.
+Possible modes are t and a. t Draws an triangle, a draws and arc and s draws a sigmoid. Possible directions are < and > for left and right.
 For example Zt> Draws a triangle seperator orientated to the right. Seperators respect the width, height, foreground and background colour formatting parameters.
 
 =item B<W>
@@ -219,5 +219,3 @@ L<git repository|https://github.com/ocdy1001/shapebar>
 Xinerama support was kindly contributed by Stebalien
 
 RandR support was kindly contributed by jvvv
-
-Clickable areas support was heavily based off u-ra contribution

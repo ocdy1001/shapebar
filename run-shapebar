@@ -1,1 +1,1 @@
-~/scripts/shapebar-conf | shapebar -c -B "#00000000" -F "#80000000" -p -g "x26++" -f "Literation Mono Powerline:style=Bold:size=13"
+~/scripts/shapebar-conf | shapebar -c -B "#00000000" -F "#80000000" -p -g "x26++" -f "Literation Mono Powerline:style=Bold:size=13" -a 40
