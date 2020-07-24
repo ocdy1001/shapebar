@@ -1,5 +1,6 @@
 // vim:sw=4:ts=4:et:
 #define _POSIX_C_SOURCE 200809L
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -168,7 +169,7 @@ fill_poly (xcb_drawable_t d, xcb_gcontext_t _gc, int plen, const xcb_point_t *po
 #define POINT xcb_point_t
 
 const POINT*
-seperator_hud(int x, int y, int w, int h, char dir)
+sep_t0(int x, int y, int w, int h, char dir, int *len)
 {
     POINT* ps = malloc(sizeof(POINT) * 3);
     if(dir == '<'){
@@ -180,9 +181,36 @@ seperator_hud(int x, int y, int w, int h, char dir)
         ps[1] = (POINT){x+w,y};
         ps[2] = (POINT){x,y+h};
     }
+    *len = 3;
     return ps;
 }
 
+const POINT*
+sep_arc(int x, int y, int w, int h, char dir, int *len)
+{
+    int n = 25;
+    float r = 1.570796325f;
+    POINT* ps = malloc(sizeof(POINT) * (n + 3));
+    if(dir == '<'){
+        for(int i = 0; i < n; i++){
+            float o = (float)i / (float)n * r;
+            ps[i] = (POINT){x + w - (int)(sin(o) * w), (int)(cos(o) * h) + y};
+        }
+        ps[n + 0] = (POINT){x, y};
+        ps[n + 1] = (POINT){x + w, y};
+        ps[n + 2] = (POINT){x + w, y + h};
+    }else{
+        for(int i = 0; i < n; i++){
+            float o = (float)i / (float)n * r;
+            ps[i] = (POINT){(int)(sin(o) * w) + x, (int)(cos(o) * h) + y};
+        }
+        ps[n + 0] = (POINT){x + w, y};
+        ps[n + 1] = (POINT){x, y};
+        ps[n + 2] = (POINT){x, y + h};
+    }
+    *len = n + 3;
+    return ps;
+}
 // Apparently xcb cannot seem to compose the right request for this call, hence we have to do it by
 // ourselves.
 // The funcion is taken from 'wmdia' (http://wmdia.sourceforge.net/)
@@ -539,7 +567,9 @@ parse (char *text)
                         }
                         char dir = *p;
                         int x = shift(cur_mon, pos_x, align, sep_width);
-                        fill_poly(cur_mon->pixmap, gc[GC_DRAW], 3, seperator_hud(x, 0, sep_width, sep_height, dir));
+                        int len = 0;
+                        const POINT* ps = sep_arc(x, 0, sep_width, sep_height, dir, &len);
+                        fill_poly(cur_mon->pixmap, gc[GC_DRAW], len, ps);
                         pos_x += sep_width;
                         break;
                     }
