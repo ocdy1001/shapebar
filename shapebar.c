@@ -102,6 +102,7 @@ static rgba_t fgc, bgc, ugc;
 static rgba_t dfgc, dbgc, dugc;
 static bool clone_mode = false;
 static int sep_width = 0, sep_height = 0;
+static int arc_n = 25; // how many points you want in the arc part of the arc seperator
 
 static XftColor sel_fg;
 static XftDraw *xft_draw;
@@ -188,7 +189,7 @@ sep_t0(int x, int y, int w, int h, char dir, int *len)
 const POINT*
 sep_arc(int x, int y, int w, int h, char dir, int *len)
 {
-    int n = 25;
+    int n = arc_n;
     float r = 1.570796325f;
     POINT* ps = malloc(sizeof(POINT) * (n + 3));
     if(dir == '<'){
@@ -568,7 +569,9 @@ parse (char *text)
                         char dir = *p;
                         int x = shift(cur_mon, pos_x, align, sep_width);
                         int len = 0;
-                        const POINT* ps = sep_arc(x, 0, sep_width, sep_height, dir, &len);
+                        const POINT* ps;
+                        if(mode == 'a') ps = sep_arc(x, 0, sep_width, sep_height, dir, &len);
+                        else ps = sep_t0(x, 0, sep_width, sep_height, dir, &len);
                         fill_poly(cur_mon->pixmap, gc[GC_DRAW], len, ps);
                         pos_x += sep_width;
                         break;
@@ -1391,11 +1394,11 @@ main (int argc, char **argv)
     // Connect to the Xserver and initialize scr
     xconn();
 
-    while ((ch = getopt(argc, argv, "hg:bdcf:a:pu:B:F:U:n:o:")) != -1) {
+    while ((ch = getopt(argc, argv, "hg:bdcf:a:pu:B:F:U:n:o:a:")) != -1) {
         switch (ch) {
             case 'h':
                 printf ("Shapebar version %s\n", VERSION);
-                printf ("usage: %s [-h | -g | -b | -d | -c | -f | -p | -n | -u | -B | -F]\n"
+                printf ("usage: %s [-h | -g | -b | -d | -c | -f | -p | -n | -u | -B | -F | -o | -a]\n"
                         "\t-h Show this help\n"
                         "\t-g Set the bar geometry {width}x{height}+{xoffset}+{yoffset}\n"
                         "\t-b Put the bar at the bottom of the screen\n"
@@ -1407,7 +1410,9 @@ main (int argc, char **argv)
                         "\t-u Set the underline/overline height in pixels\n"
                         "\t-B Set background color in #AARRGGBB\n"
                         "\t-F Set foreground color in #AARRGGBB\n"
-                        "\t-o Add a vertical offset to the text, it can be negative\n", argv[0]);
+                        "\t-o Add a vertical offset to the text, it can be negative\n"
+                        "\t-a How many points there are in the arc part of the arc seperator, default to 25\n"
+                        , argv[0]);
                 exit (EXIT_SUCCESS);
             case 'g': (void)parse_geometry_string(optarg, geom_v); break;
             case 'p': permanent = true; break;
@@ -1417,6 +1422,7 @@ main (int argc, char **argv)
             case 'c': clone_mode = true; break;
             case 'f': font_load(optarg); break;
             case 'u': bu = strtoul(optarg, NULL, 10); break;
+            case 'a': arc_n = strtoul(optarg, NULL, 10); break;
             case 'o': add_y_offset(strtol(optarg, NULL, 10)); break;
             case 'B': dbgc = bgc = parse_color(optarg, NULL, (rgba_t)0x00000000U); break;
             case 'F': dfgc = fgc = parse_color(optarg, NULL, (rgba_t)0xffffffffU); break;

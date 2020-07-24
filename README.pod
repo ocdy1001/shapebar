@@ -1,10 +1,10 @@
-=head1 NAME
+=head1 Shapebar
 
 Shapebar - Simple bar based on Lemonbar.
 
 =head1 SYNOPSIS
 
-I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font> | -p | -n I<name> | -u I<pixel> | -B I<color> | -F I<color> | -U I<color> | -o I<offset> ]
+I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font> | -p | -n I<name> | -u I<pixel> | -B I<color> | -F I<color> | -U I<color> | -o I<offset>  | -a I<arc points>]
 
 =head1 DESCRIPTION
 
@@ -15,7 +15,6 @@ Shapebar is supposed to be a simple non interactive bar that only has functional
 I was annoyed by Polybar's many modules that need to be compiled. This explodes the scope of the program.
 You just pipe in the text from bash. I barely changed the input method from the original Lemonbar.
 When I used Polybar I wanted triangles drawn in the bar and did it very hacky by having a powerline font and using the triangle char at exactly the right size.
-TODO:
 Shapebar adds shapes to draw in the backgound. They serve as seperators. This is how Shapebar derives it's name.
 
 =over
@@ -86,6 +85,10 @@ Add a vertical offset to the text. I<offset> must be a number and can be negativ
 =item B<-U> I<color>
 
 Set the underline color of the bar. Accepts the same color formats as B<-B>.
+
+=item B<-a> I<arc points>
+
+set the number of points in the arc part of the arc seperator. Must be a non-negative integer.
 
 =back
 
@@ -182,6 +185,20 @@ Draw a line over the text.
 =item B<u>
 
 Draw a line under the text.
+
+=item B<Zmd>
+
+Draw a seperator. Use the format Z??. First char after the Z is the mode, which selects the seperator. Second char is the direction.
+Possible modes are t and a. t Draws an triangle and a draws and arc. Possible directions are < and > for left and right.
+For example Zt> Draws a triangle seperator orientated to the right. Seperators respect the width, height, foreground and background colour formatting parameters.
+
+=item B<W>
+
+Sets the width parameter used for seperators.
+
+=item B<H>
+
+Sets the height parameter used for seperators.
 
 =back
 
