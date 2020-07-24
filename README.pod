@@ -186,7 +186,7 @@ Draw a line over the text.
 
 Draw a line under the text.
 
-=item B<Zmd>
+=item B<Z>I<md>
 
 Draw a seperator. Use the format Z??. First char after the Z is the mode, which selects the seperator. Second char is the direction.
 Possible modes are t and a. t Draws an triangle and a draws and arc. Possible directions are < and > for left and right.
