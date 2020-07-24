@@ -1,5 +1,5 @@
 #!/bin/bash
 outp=$(sensors)
-nvmet=$(echo "$outp" | grep "Composite" | awk '{print $2}')
-cput=$(echo "$outp" | grep "Tctl" | awk '{print $2}')
-echo -e "NVMe: $nvmet CPU: $cput"
+nvmet=$(echo "$outp" | grep "Composite" | awk '{print substr($2,2,2)}')
+cput=$(echo "$outp" | grep "Tctl" | awk '{print substr($2,2,2)}')
+echo -e "NVMe: $nvmet°C CPU: $cput°C"
