@@ -189,7 +189,8 @@ Draw a line under the text.
 =item B<Z>I<md>
 
 Draw a seperator. Use the format Z??. First char after the Z is the mode, which selects the seperator. Second char is the direction.
-Possible modes are t and a. t Draws an triangle, a draws and arc and s draws a sigmoid. Possible directions are < and > for left and right.
+Possible modes are t and a. t Draws a triangle with an horizontal and a vertical edge, T draws a triangle with a vertical edge.
+a draws and arc and s draws a sigmoid. Possible directions are < and > for left and right.
 For example Zt> Draws a triangle seperator orientated to the right. Seperators respect the width, height, foreground and background colour formatting parameters.
 
 =item B<W>

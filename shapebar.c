@@ -187,6 +187,23 @@ sep_t0(int x, int y, int w, int h, char dir, int *len)
 }
 
 const POINT*
+sep_t1(int x, int y, int w, int h, char dir, int *len)
+{
+    POINT* ps = malloc(sizeof(POINT) * 3);
+    if(dir == '<'){
+        ps[0] = (POINT){x + w,y};
+        ps[1] = (POINT){x, y + h * 0.5f};
+        ps[2] = (POINT){x + w, y + h};
+    }else{
+        ps[0] = (POINT){x,y};
+        ps[1] = (POINT){x + w, y + h * 0.5f};
+        ps[2] = (POINT){x, y + h};
+    }
+    *len = 3;
+    return ps;
+}
+
+const POINT*
 sep_arc(int x, int y, int w, int h, char dir, int *len)
 {
     int n = arc_n;
@@ -595,11 +612,13 @@ parse (char *text)
                         }
                         char dir = *p;
                         int x = shift(cur_mon, pos_x, align, sep_width);
+                        int y = bh*0.5f - sep_height*0.5f;
                         int len = 0;
                         const POINT* ps;
-                        if(mode == 'a') ps = sep_arc(x, 0, sep_width, sep_height, dir, &len);
-                        else if(mode == 's') ps = sep_sigmoid(x, 0, sep_width, sep_height, dir, &len);
-                        else ps = sep_t0(x, 0, sep_width, sep_height, dir, &len);
+                        if(mode == 'a') ps = sep_arc(x, y, sep_width, sep_height, dir, &len);
+                        else if(mode == 's') ps = sep_sigmoid(x, y, sep_width, sep_height, dir, &len);
+                        else if(mode == 'T') ps = sep_t1(x, y, sep_width, sep_height, dir, &len);
+                        else ps = sep_t0(x, y, sep_width, sep_height, dir, &len);
                         fill_poly(cur_mon->pixmap, gc[GC_DRAW], len, ps);
                         pos_x += sep_width;
                         break;
