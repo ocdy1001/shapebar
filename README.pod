@@ -8,8 +8,8 @@ I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font
 
 =head1 DESCRIPTION
 
-B<Shapebar> is based on B<lemonboy/bar> and B<krypt-n/bar> which provides the standard Lemonbar functionity along with Xft support.
-Shapebar adds monitor cloning mode (-c), (todo: shaped borders) and removes clickable areas.
+B<Shapebar> is based on B<lemonboy/bar> and B<krypt-n/bar> which provides the standard Lemonbar functionality along with Xft support.
+Shapebar adds monitor cloning mode (-c), shape seperators and removes clickable areas.
 
 Shapebar is supposed to be a simple non interactive bar that only has functionality to display info.
 I was annoyed by Polybar's many modules that need to be compiled. This explodes the scope of the program.
@@ -21,7 +21,7 @@ Shapebar adds shapes to draw in the backgound. They serve as seperators. This is
 
 =item Monitor cloning mode is introduced to have an easy method of having the same bar everywhere for uniform sized monitors.
 
-=item Clickable areas are removed because I didn't design shapebar to be interactive.
+=item Clickable areas are removed because in my opinion bars should only display info and using the mouse is a big no in most cases.
 
 =back
 
