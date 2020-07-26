@@ -229,6 +229,25 @@ sep_arc(int x, int y, int w, int h, char dir, int *len)
     *len = n + 3;
     return ps;
 }
+
+const POINT*
+sep_hemisphere(int x, int y, int w, int h, char dir, int *len){
+    int n = arc_n;
+    float r = 3.14159265;
+    POINT* ps = malloc(sizeof(POINT) * (n + 2));
+    if(dir == '<'){
+    }else{
+        for(int i = 0; i < n; i++){
+            float o = (float)i / (float)n * r;
+            ps[i] = (POINT){x + (int)(sin(o) * w), y + (int)((cos(o) * 0.5f + 0.5f) * h)};
+        }
+        ps[n + 0] = (POINT){x, y};
+        ps[n + 1] = (POINT){x, y + h};
+    }
+    *len = n + 2;
+    return ps;
+}
+
 const POINT*
 sep_sigmoid(int x, int y, int w, int h, char dir, int *len)
 {
@@ -618,6 +637,7 @@ parse (char *text)
                         if(mode == 'a') ps = sep_arc(x, y, sep_width, sep_height, dir, &len);
                         else if(mode == 's') ps = sep_sigmoid(x, y, sep_width, sep_height, dir, &len);
                         else if(mode == 'T') ps = sep_t1(x, y, sep_width, sep_height, dir, &len);
+                        else if(mode == 'h') ps = sep_hemisphere(x, y, sep_width, sep_height, dir, &len);
                         else ps = sep_t0(x, y, sep_width, sep_height, dir, &len);
                         fill_poly(cur_mon->pixmap, gc[GC_DRAW], len, ps);
                         pos_x += sep_width;
@@ -627,6 +647,7 @@ parse (char *text)
                     {
                         if(*p == '-'){
                             sep_width = bh;
+                            p++;
                             break;
                         }
                         errno = 0;
@@ -640,6 +661,7 @@ parse (char *text)
                     {
                         if(*p == '-'){
                             sep_height = bh;
+                            p++;
                             break;
                         }
                         errno = 0;
