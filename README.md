@@ -27,61 +27,67 @@ Clickable areas are removed because in my opinion bars should only
 display info and using the mouse is a big no in most cases.
 
 # OPTIONS
--h  Display the help and exit.
+###### -h  
+Display the help and exit.
 
--g *width*x*height*+*x*+*y*
-    Set the window geometry. If a parameter is omitted it's filled with
-    the default value. If the *y* parameter is specified along with the
-    -b switch then the position is relative to the bottom of the screen.
+###### -g *width*x*height*+*x*+*y*
+Set the window geometry. If a parameter is omitted it's filled with
+the default value. If the *y* parameter is specified along with the
+-b switch then the position is relative to the bottom of the screen.
 
--b  Dock the bar at the bottom of the screen.
+###### -b  
+Dock the bar at the bottom of the screen.
 
--d  Force docking without asking the window manager. This is needed if
-    the window manager isn't EWMH compliant.
+###### -d  
+Force docking without asking the window manager. This is needed if
+the window manager isn't EWMH compliant.
 
--c  Copy the the pixelmap of the headmonitor (the first one) to all
-    others and ignores %{S} blocks. Only Suitable for uniform sized
-    monitors. Light and fast. No error checking included. If you have
-    non uniform sized monitors it is undefined behaviour. If this does
-    not work in your situation, use %{S} blocks to get your string
-    across monitors.
 
--f *font*
-    Define the font to load into one of the five slots (the number of
-    slots is hardcoded and can be tweaked by changing the MAX_FONT_COUNT
-    parameter in the source code). This version supports fontconfig font
-    specifiers and anti-aliased fonts.
+###### -c  
+Copy the the pixelmap of the headmonitor (the first one) to all
+others and ignores %{S} blocks. Only Suitable for uniform sized
+monitors. Light and fast. No error checking included. If you have
+non uniform sized monitors it is undefined behaviour. If this does
+not work in your situation, use %{S} blocks to get your string
+across monitors.
 
--p  Make the bar permanent, don't exit after the standard input is
-    closed.
+###### -f *font*
+Define the font to load into one of the five slots (the number of
+slots is hardcoded and can be tweaked by changing the MAX_FONT_COUNT
+parameter in the source code). This version supports fontconfig font
+specifiers and anti-aliased fonts.
 
--n *name*
-    Set the WM_NAME atom value for the bar.
+###### -p  
+Make the bar permanent, don't exit after the standard input is
+closed.
 
--u *pixel*
-    Sets the underline width in pixels. The default is 1.
+###### -n *name*
+Set the WM_NAME atom value for the bar.
 
--B *color*
-    Set the background color of the bar. *color* must be specified in
-    the hex format (#aarrggbb, #rrggbb, #rgb). If no compositor such as
-    compton or xcompmgr is running the alpha channel is silently
-    ignored.
+###### -u *pixel*
+Sets the underline width in pixels. The default is 1.
 
--F *color*
-    Set the foreground color of the bar. Accepts the same color formats
-    as -B.
+###### -B *color*
+Set the background color of the bar. *color* must be specified in
+the hex format (#aarrggbb, #rrggbb, #rgb). If no compositor such as
+compton or xcompmgr is running the alpha channel is silently
+ignored.
 
--o *offset*
-    Add a vertical offset to the text. *offset* must be a number and can
-    be negative. *-o -3* will push the text 3 pixels up.
+###### -F *color*
+Set the foreground color of the bar. Accepts the same color formats
+as -B.
 
--U *color*
-    Set the underline color of the bar. Accepts the same color formats
-    as -B.
+###### -o *offset*
+Add a vertical offset to the text. *offset* must be a number and can
+be negative. *-o -3* will push the text 3 pixels up.
 
--a *arc points*
-    set the number of points in the curved part of the arc, hemisphere
-    and sigmoid separator. Must be a non-negative integer.
+###### -U *color*
+Set the underline color of the bar. Accepts the same color formats
+as -B.
+
+###### -a *arc points*
+set the number of points in the curved part of the arc, hemisphere
+and sigmoid separator. Must be a non-negative integer.
 
 # FORMATTING
 lemonbar provides a screenrc-inspired formatting syntax to allow full
@@ -90,42 +96,46 @@ closed by "}" and accepts the following commands, the parser tries its
 best to handle malformed input. Use "%%" to get a literal percent sign
 ("%").
 
-R   Swap the current background and foreground colors.
+###### R   
+Swap the current background and foreground colors.
 
-l   Aligns the following text to the left side of the screen.
+###### l   
+Aligns the following text to the left side of the screen.
 
-c   Aligns the following text to the center of the screen.
+###### c   
+Aligns the following text to the center of the screen.
 
-r   Aligns the following text to the right side of the screen.
+###### r   
+Aligns the following text to the right side of the screen.
 
-O*width*
-    Offset the current position by *width* pixels in the alignment
-    direction.
+###### O*width*
+Offset the current position by *width* pixels in the alignment
+direction.
 
-B*color*
-    Set the text background color. The parameter *color* can be *-* or a
-    color in one of the formats mentioned before. The special value *-*
-    resets the color to the default one.
+###### B*color*
+Set the text background color. The parameter *color* can be *-* or a
+color in one of the formats mentioned before. The special value *-*
+resets the color to the default one.
 
-F*color*
-    Set the text foreground color. The parameter *color* can be *-* or a
-    color in one of the formats mentioned before. The special value *-*
-    resets the color to the default one.
+###### F*color*
+Set the text foreground color. The parameter *color* can be *-* or a
+color in one of the formats mentioned before. The special value *-*
+resets the color to the default one.
 
-T*index*
-    Set the font used to draw the following text. The parameter *index*
-    can either be *-* or the 1-based index of the slot which contains
-    the desired font. If the parameter is *-* lemonbar resets to the
-    normal behavior (matching the first font that can be used for the
-    character). If the selected font can't be used to draw a character,
-    lemonbar will fall back to normal behavior for that character
+###### T*index*
+Set the font used to draw the following text. The parameter *index*
+can either be *-* or the 1-based index of the slot which contains
+the desired font. If the parameter is *-* lemonbar resets to the
+normal behavior (matching the first font that can be used for the
+character). If the selected font can't be used to draw a character,
+lemonbar will fall back to normal behavior for that character
 
-U*color*
-    Set the text underline color. The parameter *color* can be *-* or a
-    color in one of the formats mentioned before. The special value *-*
-    resets the color to the default one.
+###### U*color*
+Set the text underline color. The parameter *color* can be *-* or a
+color in one of the formats mentioned before. The special value *-*
+resets the color to the default one.
 
-S*dir*
+###### S*dir*
 Change the monitor the bar is rendered to. *dir* can be either
 
 +/- Next/previous monitor.
@@ -135,7 +145,7 @@ f/l First/last monitor.
 *0-9*
     Nth monitor.
 
-Attribute modifiers
+###### Attribute modifiers
 
 +*attribute*
     Set the attribute *attribute* for the following text.
@@ -152,7 +162,7 @@ o   Draw a line over the text.
 
 u   Draw a line under the text.
 
-Z*md*
+###### Z*md*
 Draw a separator. Use the format Z??. First char after the Z is the
 mode, which selects the separator. Second char is the direction.
 Possible modes are t, T, a, s, h. t Draws a triangle with an
@@ -163,11 +173,13 @@ Draws a triangle separator orientated to the right. Separators
 respect the width, height, foreground and background colour
 formatting parameters.
 
-W   Sets the width parameter used for separators. The special value -
-    sets the width parameter to the bar height.
+###### W*width*
+Sets the width parameter used for separators. The special value -
+sets the width parameter to the bar height.
 
-H   Sets the height parameter used for separators. The special value -
-    sets the height parameter to the bar height.
+###### H*height*   
+Sets the height parameter used for separators. The special value -
+sets the height parameter to the bar height.
 
 # ROADMAP
 -C to clone bar over different sized monitors?
