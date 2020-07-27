@@ -102,7 +102,7 @@ static rgba_t fgc, bgc, ugc;
 static rgba_t dfgc, dbgc, dugc;
 static bool clone_mode = false;
 static int sep_width = 0, sep_height = 0;
-static int arc_n = 25; // how many points you want in the arc part of the arc seperator
+static int arc_n = 25; // how many points you want in the arc part of the arc separator
 
 static XftColor sel_fg;
 static XftDraw *xft_draw;
@@ -169,7 +169,7 @@ fill_poly (xcb_drawable_t d, xcb_gcontext_t _gc, int plen, const xcb_point_t *po
 
 #define POINT xcb_point_t
 
-const POINT*
+POINT*
 sep_t0(int x, int y, int w, int h, char dir, int *len)
 {
     POINT* ps = malloc(sizeof(POINT) * 3);
@@ -186,7 +186,7 @@ sep_t0(int x, int y, int w, int h, char dir, int *len)
     return ps;
 }
 
-const POINT*
+POINT*
 sep_t1(int x, int y, int w, int h, char dir, int *len)
 {
     POINT* ps = malloc(sizeof(POINT) * 3);
@@ -203,7 +203,7 @@ sep_t1(int x, int y, int w, int h, char dir, int *len)
     return ps;
 }
 
-const POINT*
+POINT*
 sep_arc(int x, int y, int w, int h, char dir, int *len)
 {
     int n = arc_n;
@@ -230,7 +230,7 @@ sep_arc(int x, int y, int w, int h, char dir, int *len)
     return ps;
 }
 
-const POINT*
+POINT*
 sep_hemisphere(int x, int y, int w, int h, char dir, int *len){
     int n = arc_n;
     float r = 3.14159265;
@@ -248,7 +248,7 @@ sep_hemisphere(int x, int y, int w, int h, char dir, int *len){
     return ps;
 }
 
-const POINT*
+POINT*
 sep_sigmoid(int x, int y, int w, int h, char dir, int *len)
 {
     int n = arc_n;
@@ -482,8 +482,6 @@ parse_color (const char *str, char **end, const rgba_t def)
     }
     return (rgba_t)0U;
 }
-void
-parse_seperator(const char *str, char **end);
 
 void
 set_attribute (const char modifier, const char attribute)
@@ -621,7 +619,7 @@ parse (char *text)
                         p++;
                         pos_x = 0;
                         break;
-                    case 'Z': // Seperator
+                    case 'Z': // Separator
                     {
                         char mode = *p;
                         p++;
@@ -633,13 +631,14 @@ parse (char *text)
                         int x = shift(cur_mon, pos_x, align, sep_width);
                         int y = bh*0.5f - sep_height*0.5f;
                         int len = 0;
-                        const POINT* ps;
+                        POINT* ps;
                         if(mode == 'a') ps = sep_arc(x, y, sep_width, sep_height, dir, &len);
                         else if(mode == 's') ps = sep_sigmoid(x, y, sep_width, sep_height, dir, &len);
                         else if(mode == 'T') ps = sep_t1(x, y, sep_width, sep_height, dir, &len);
                         else if(mode == 'h') ps = sep_hemisphere(x, y, sep_width, sep_height, dir, &len);
                         else ps = sep_t0(x, y, sep_width, sep_height, dir, &len);
                         fill_poly(cur_mon->pixmap, gc[GC_DRAW], len, ps);
+                        free(ps);
                         pos_x += sep_width;
                         break;
                     }
@@ -1348,7 +1347,7 @@ init (char *wm_name, char *wm_instance)
             char *wm_class;
             int wm_class_offset, wm_class_len;
 
-            // WM_CLASS is nullbyte seperated: wm_instance + "\0Bar\0"
+            // WM_CLASS is nullbyte separated: wm_instance + "\0Bar\0"
             wm_class_offset = strlen(wm_instance) + 1;
             wm_class_len = wm_class_offset + 4;
 
@@ -1480,7 +1479,7 @@ main (int argc, char **argv)
                         "\t-B Set background color in #AARRGGBB\n"
                         "\t-F Set foreground color in #AARRGGBB\n"
                         "\t-o Add a vertical offset to the text, it can be negative\n"
-                        "\t-a How many points there are in the curved parts of seperators, default to 25\n"
+                        "\t-a How many points there are in the curved parts of separators, default to 25\n"
                         , argv[0]);
                 exit (EXIT_SUCCESS);
             case 'g': (void)parse_geometry_string(optarg, geom_v); break;

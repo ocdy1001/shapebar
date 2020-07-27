@@ -1,5 +1,6 @@
 # Shapebar
 Shapebar - Simple bar based on Lemonbar.
+
 ![](shapebar.png)
 
 # SYNOPSIS
@@ -8,7 +9,7 @@ Shapebar - Simple bar based on Lemonbar.
 # DESCRIPTION
 Shapebar is based on lemonboy/bar and krypt-n/bar which provides the
 standard Lemonbar functionality along with Xft support. Shapebar adds
-monitor cloning mode (-c), shape seperators and removes clickable areas.
+monitor cloning mode (-c), shape separators and removes clickable areas.
 
 Shapebar is supposed to be a simple non interactive bar that only has
 functionality to display info. I was annoyed by Polybar's many modules
@@ -17,7 +18,7 @@ just pipe in the text from bash. I barely changed the input method from
 the original Lemonbar. When I used Polybar I wanted triangles drawn in
 the bar and did it very hacky by having a powerline font and using the
 triangle char at exactly the right size. Shapebar adds shapes to draw in
-the backgound. They serve as seperators. This is how Shapebar derives
+the backgound. They serve as separators. This is how Shapebar derives
 it's name.
 
 Monitor cloning mode is introduced to have an easy method of having the
@@ -80,7 +81,7 @@ display info and using the mouse is a big no in most cases.
 
 -a *arc points*
     set the number of points in the curved part of the arc, hemisphere
-    and sigmoid seperator. Must be a non-negative integer.
+    and sigmoid separator. Must be a non-negative integer.
 
 # FORMATTING
 lemonbar provides a screenrc-inspired formatting syntax to allow full
@@ -152,31 +153,30 @@ o   Draw a line over the text.
 u   Draw a line under the text.
 
 Z*md*
-Draw a seperator. Use the format Z??. First char after the Z is the
-mode, which selects the seperator. Second char is the direction.
+Draw a separator. Use the format Z??. First char after the Z is the
+mode, which selects the separator. Second char is the direction.
 Possible modes are t, T, a, s, h. t Draws a triangle with an
 horizontal and a vertical edge, T draws a triangle with a vertical
 edge. a draws and arc and s draws a sigmoid. h draws a hemisphere.
 Possible directions are < and > for left and right. For example Zt>
-Draws a triangle seperator orientated to the right. Seperators
+Draws a triangle separator orientated to the right. Separators
 respect the width, height, foreground and background colour
 formatting parameters.
 
-W   Sets the width parameter used for seperators. The special value -
+W   Sets the width parameter used for separators. The special value -
     sets the width parameter to the bar height.
 
-H   Sets the height parameter used for seperators. The special value -
+H   Sets the height parameter used for separators. The special value -
     sets the height parameter to the bar height.
 
-# OUTPUT
-Clicking on an area makes lemonbar output the command to stdout,
-followed by a newline, allowing the user to pipe it into a script,
-execute it or simply ignore it. Simple and powerful, that's it.
+# ROADMAP
+-C to clone bar over different sized monitors?
+-Some more shapes?
 
-WWW
-    git repository <https://github.com/ocdy1001/shapebar>
+# WWW
+git repository <https://github.com/ocdy1001/shapebar>
 
-AUTHOR
+# AUTHOR
 2012-2017 (C) The Lemon Man
 
 2020 (C) Cody Bloemhard

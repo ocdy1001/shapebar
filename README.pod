@@ -9,13 +9,13 @@ I<lemonbar> [-h | -g I<width>B<x>I<height>B<+>I<x>B<+>I<y> | -b | -d | -f I<font
 =head1 DESCRIPTION
 
 B<Shapebar> is based on B<lemonboy/bar> and B<krypt-n/bar> which provides the standard Lemonbar functionality along with Xft support.
-Shapebar adds monitor cloning mode (-c), shape seperators and removes clickable areas.
+Sharebar adds monitor cloning mode (-c), shape separators and removes clickable areas.
 
 Shapebar is supposed to be a simple non interactive bar that only has functionality to display info.
 I was annoyed by Polybar's many modules that need to be compiled. This explodes the scope of the program.
 You just pipe in the text from bash. I barely changed the input method from the original Lemonbar.
 When I used Polybar I wanted triangles drawn in the bar and did it very hacky by having a powerline font and using the triangle char at exactly the right size.
-Shapebar adds shapes to draw in the backgound. They serve as seperators. This is how Shapebar derives it's name.
+Shapebar adds shapes to draw in the backgound. They serve as separators. This is how Shapebar derives it's name.
 
 =over
 
@@ -88,7 +88,7 @@ Set the underline color of the bar. Accepts the same color formats as B<-B>.
 
 =item B<-a> I<arc points>
 
-set the number of points in the curved part of the arc, hemisphere and sigmoid seperator. Must be a non-negative integer.
+set the number of points in the curved part of the arc, hemisphere and sigmoid separator. Must be a non-negative integer.
 
 =back
 
@@ -188,18 +188,18 @@ Draw a line under the text.
 
 =item B<Z>I<md>
 
-Draw a seperator. Use the format Z??. First char after the Z is the mode, which selects the seperator. Second char is the direction.
+Draw a separator. Use the format Z??. First char after the Z is the mode, which selects the separator. Second char is the direction.
 Possible modes are t, T, a, s, h. t Draws a triangle with an horizontal and a vertical edge, T draws a triangle with a vertical edge.
 a draws and arc and s draws a sigmoid. h draws a hemisphere. Possible directions are < and > for left and right.
-For example Zt> Draws a triangle seperator orientated to the right. Seperators respect the width, height, foreground and background colour formatting parameters.
+For example Zt> Draws a triangle separator orientated to the right. Seperators respect the width, height, foreground and background colour formatting parameters.
 
 =item B<W>
 
-Sets the width parameter used for seperators. The special value - sets the width parameter to the bar height.
+Sets the width parameter used for separators. The special value - sets the width parameter to the bar height.
 
 =item B<H>
 
-Sets the height parameter used for seperators. The special value - sets the height parameter to the bar height.
+Sets the height parameter used for separators. The special value - sets the height parameter to the bar height.
 
 =back
 
