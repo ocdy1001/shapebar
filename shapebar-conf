@@ -1,5 +1,4 @@
-#!/bin/zsh
-#stupid ass printf %3s doesnt work on bash?
+#!/bin/bash
 # cpu calc: https://stackoverflow.com/questions/26791240/how-to-get-percentage-of-processor-use-with-bash
 i=0
 updv=''
